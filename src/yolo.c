@@ -10,12 +10,17 @@
 #include "opencv2/highgui/highgui_c.h"
 #endif
 
-char *voc_names[] = {"aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car", "cat", "chair", "cow", "diningtable", "dog", "horse", "motorbike", "person", "pottedplant", "sheep", "sofa", "train", "tvmonitor"};
+
+#define CLASS_NUM 1
+
+char *voc_names[] = {"face"};
+image voc_labels[CLASS_NUM];
+
 
 void train_yolo(char *cfgfile, char *weightfile)
 {
-    char *train_images = "/data/voc/train.txt";
-    char *backup_directory = "/home/pjreddie/backup/";
+  char *train_images = "/home/ubuntu/DATA/Datasets/FDDB/train.txt";
+    char *backup_directory = "/home/ubuntu/DATA/darknet/darknet_vision/backup/";
     srand(time(0));
     char *base = basecfg(cfgfile);
     printf("%s\n", base);
@@ -318,8 +323,10 @@ void test_yolo(char *cfgfile, char *weightfile, char *filename, float thresh)
         printf("%s: Predicted in %f seconds.\n", input, sec(clock()-time));
         get_detection_boxes(l, 1, 1, thresh, probs, boxes, 0);
         if (nms) do_nms_sort(boxes, probs, l.side*l.side*l.n, l.classes, nms);
-        //draw_detections(im, l.side*l.side*l.n, thresh, boxes, probs, voc_names, alphabet, 20);
-        draw_detections(im, l.side*l.side*l.n, thresh, boxes, probs, voc_names, alphabet, 20);
+        
+        //draw_detections(im, l.side*l.side*l.n, thresh, boxes, probs, voc_names, voc_labels, 20);
+        draw_detections(im, l.side*l.side*l.n, thresh, boxes, probs, voc_names, voc_labels, CLASS_NUM);
+        
         save_image(im, "predictions");
         show_image(im, "predictions");
 
@@ -335,7 +342,15 @@ void test_yolo(char *cfgfile, char *weightfile, char *filename, float thresh)
 
 void run_yolo(int argc, char **argv)
 {
-    char *prefix = find_char_arg(argc, argv, "-prefix", 0);
+  
+    int i;
+    for(i = 0; i < CLASS_NUM; ++i){
+        char buff[256];
+        sprintf(buff, "data/labels/%s.png", voc_names[i]);
+        voc_labels[i] = load_image_color(buff, 0, 0);
+    }
+
+    
     float thresh = find_float_arg(argc, argv, "-thresh", .2);
     int cam_index = find_int_arg(argc, argv, "-c", 0);
     int frame_skip = find_int_arg(argc, argv, "-s", 0);
@@ -351,5 +366,8 @@ void run_yolo(int argc, char **argv)
     else if(0==strcmp(argv[2], "train")) train_yolo(cfg, weights);
     else if(0==strcmp(argv[2], "valid")) validate_yolo(cfg, weights);
     else if(0==strcmp(argv[2], "recall")) validate_yolo_recall(cfg, weights);
-    else if(0==strcmp(argv[2], "demo")) demo(cfg, weights, thresh, cam_index, filename, voc_names, 20, frame_skip, prefix, .5);
+    
+    
+    else if(0==strcmp(argv[2], "demo")) demo(cfg, weights, thresh, cam_index, filename, voc_names, voc_labels, CLASS_NUM, frame_skip);
+    
 }

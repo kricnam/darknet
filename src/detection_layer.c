@@ -238,6 +238,7 @@ void get_detection_boxes(layer l, int w, int h, float thresh, float **probs, box
             boxes[index].y = (predictions[box_index + 1] + row) / l.side * h;
             boxes[index].w = pow(predictions[box_index + 2], (l.sqrt?2:1)) * w;
             boxes[index].h = pow(predictions[box_index + 3], (l.sqrt?2:1)) * h;
+            
             for(j = 0; j < l.classes; ++j){
                 int class_index = i*l.classes;
                 float prob = scale*predictions[class_index+j];

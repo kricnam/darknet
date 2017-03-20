@@ -184,17 +184,17 @@ void correct_boxes_rot(box_label *boxes, int n, float dx, float dy, float sx, fl
     boxes[i].bottom = boxes[i].bottom* sy - dy;
 
     if(flip){
-      printf("%0.3f,%0.3f  %0.3f,%0.3f ->",boxes[i].left,boxes[i].top,boxes[i].right,boxes[i].bottom);
+      //printf("%0.3f,%0.3f  %0.3f,%0.3f ->",boxes[i].left,boxes[i].top,boxes[i].right,boxes[i].bottom);
       float swap = boxes[i].left;
       boxes[i].left = 1. - boxes[i].right;
       boxes[i].right = 1. - swap;
-      printf("%0.3f,%0.3f  %0.3f,%0.3f\n",boxes[i].left,boxes[i].top,boxes[i].right,boxes[i].bottom);
+      //printf("%0.3f,%0.3f  %0.3f,%0.3f\n",boxes[i].left,boxes[i].top,boxes[i].right,boxes[i].bottom);
     }
 
     int cw;
     for (cw=0; cw < rot_cw; cw++)
       {
-        printf("%0.3f,%0.3f  %0.3f,%0.3f ->",boxes[i].left,boxes[i].top,boxes[i].right,boxes[i].bottom);
+        //printf("%0.3f,%0.3f  %0.3f,%0.3f ->",boxes[i].left,boxes[i].top,boxes[i].right,boxes[i].bottom);
         float swap = boxes[i].top;
         float tmp = boxes[i].left;
         boxes[i].top = 1. -  boxes[i].right;
@@ -202,7 +202,7 @@ void correct_boxes_rot(box_label *boxes, int n, float dx, float dy, float sx, fl
         swap = boxes[i].right;
         boxes[i].right =  boxes[i].bottom;
         boxes[i].bottom = 1.0 - tmp;
-        printf("%0.3f,%0.3f  %0.3f,%0.3f\n",boxes[i].left,boxes[i].top,boxes[i].right,boxes[i].bottom);
+        //printf("%0.3f,%0.3f  %0.3f,%0.3f\n",boxes[i].left,boxes[i].top,boxes[i].right,boxes[i].bottom);
       }
 
     boxes[i].left =  constrain(0, 1, boxes[i].left);
@@ -759,7 +759,7 @@ data load_data_detection(int n, char **paths, int m, int w, int h, int boxes, in
         d.X.vals[i] = sized.data;
 
         fill_truth_detection(random_paths[i], boxes, d.y.vals[i], classes, flip, rot, dx, dy, 1./sx, 1./sy);
-        printf("%s,\tflip %d rot %d\n",random_paths[i],flip,rot);
+        //printf("%s,\tflip %d rot %d\n",random_paths[i],flip,rot);
         free_image(orig);
         free_image(cropped);
     }

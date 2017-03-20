@@ -93,7 +93,7 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
             load_thread = load_data(args);
 
             for(i = 0; i < ngpus; ++i){
-                resize_network(nets + i, dim, dim);
+              resize_network(nets + i, dim, dim);
             }
             net = nets[0];
         }

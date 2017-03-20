@@ -11,7 +11,7 @@ pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 list *get_paths(char *filename)
 {
-    char *path;
+  char *path;
     FILE *file = fopen(filename, "r");
     if(!file) file_error(filename);
     list *lines = make_list();
@@ -167,6 +167,59 @@ void randomize_boxes(box_label *b, int n)
     }
 }
 
+void correct_boxes_rot(box_label *boxes, int n, float dx, float dy, float sx, float sy,int flip,int rot_cw)
+{
+  int i;
+  for(i = 0; i < n; ++i){
+    if(boxes[i].x == 0 && boxes[i].y == 0) {
+      boxes[i].x = 999999;
+      boxes[i].y = 999999;
+      boxes[i].w = 999999;
+      boxes[i].h = 999999;
+      continue;
+    }
+    boxes[i].left   = boxes[i].left  * sx - dx;
+    boxes[i].right  = boxes[i].right * sx - dx;
+    boxes[i].top    = boxes[i].top   * sy - dy;
+    boxes[i].bottom = boxes[i].bottom* sy - dy;
+
+    if(flip){
+      printf("%0.3f,%0.3f  %0.3f,%0.3f ->",boxes[i].left,boxes[i].top,boxes[i].right,boxes[i].bottom);
+      float swap = boxes[i].left;
+      boxes[i].left = 1. - boxes[i].right;
+      boxes[i].right = 1. - swap;
+      printf("%0.3f,%0.3f  %0.3f,%0.3f\n",boxes[i].left,boxes[i].top,boxes[i].right,boxes[i].bottom);
+    }
+
+    int cw;
+    for (cw=0; cw < rot_cw; cw++)
+      {
+        printf("%0.3f,%0.3f  %0.3f,%0.3f ->",boxes[i].left,boxes[i].top,boxes[i].right,boxes[i].bottom);
+        float swap = boxes[i].top;
+        float tmp = boxes[i].left;
+        boxes[i].top = 1. -  boxes[i].right;
+        boxes[i].left  = 0.0 - swap;
+        swap = boxes[i].right;
+        boxes[i].right =  boxes[i].bottom;
+        boxes[i].bottom = 1.0 - tmp;
+        printf("%0.3f,%0.3f  %0.3f,%0.3f\n",boxes[i].left,boxes[i].top,boxes[i].right,boxes[i].bottom);
+      }
+
+    boxes[i].left =  constrain(0, 1, boxes[i].left);
+    boxes[i].right = constrain(0, 1, boxes[i].right);
+    boxes[i].top =   constrain(0, 1, boxes[i].top);
+    boxes[i].bottom =   constrain(0, 1, boxes[i].bottom);
+
+    boxes[i].x = (boxes[i].left+boxes[i].right)/2;
+    boxes[i].y = (boxes[i].top+boxes[i].bottom)/2;
+    boxes[i].w = (boxes[i].right - boxes[i].left);
+    boxes[i].h = (boxes[i].bottom - boxes[i].top);
+
+    boxes[i].w = constrain(0, 1, boxes[i].w);
+    boxes[i].h = constrain(0, 1, boxes[i].h);
+  }
+}
+
 void correct_boxes(box_label *boxes, int n, float dx, float dy, float sx, float sy, int flip)
 {
     int i;
@@ -290,7 +343,7 @@ void fill_truth_region(char *path, float *truth, int classes, int num_boxes, int
     free(boxes);
 }
 
-void fill_truth_detection(char *path, int num_boxes, float *truth, int classes, int flip, float dx, float dy, float sx, float sy)
+void fill_truth_detection(char *path, int num_boxes, float *truth, int classes, int flip, int rot, float dx, float dy, float sx, float sy)
 {
     char labelpath[4096];
     find_replace(path, "images", "labels", labelpath);
@@ -304,7 +357,7 @@ void fill_truth_detection(char *path, int num_boxes, float *truth, int classes, 
     int count = 0;
     box_label *boxes = read_boxes(labelpath, &count);
     randomize_boxes(boxes, count);
-    correct_boxes(boxes, count, dx, dy, sx, sy, flip);
+    correct_boxes_rot(boxes, count, dx, dy, sx, sy, flip,rot);
     if(count > num_boxes) count = num_boxes;
     float x,y,w,h;
     int id;
@@ -534,7 +587,7 @@ data load_data_region(int n, char **paths, int m, int w, int h, int size, int cl
         d.X.vals[i] = sized.data;
 
         fill_truth_region(random_paths[i], d.y.vals[i], classes, size, flip, dx, dy, 1./sx, 1./sy);
-
+        
         free_image(orig);
         free_image(cropped);
     }
@@ -672,7 +725,7 @@ data load_data_detection(int n, char **paths, int m, int w, int h, int boxes, in
 
     d.y = make_matrix(n, 5*boxes);
     for(i = 0; i < n; ++i){
-        image orig = load_image_color(random_paths[i], 0, 0);
+      image orig = load_image_color(random_paths[i], 0, 0);
 
         int oh = orig.h;
         int ow = orig.w;
@@ -693,17 +746,20 @@ data load_data_detection(int n, char **paths, int m, int w, int h, int boxes, in
 
         int flip = rand()%2;
         image cropped = crop_image(orig, pleft, ptop, swidth, sheight);
+        int rot = rand()%4;
 
         float dx = ((float)pleft/ow)/sx;
         float dy = ((float)ptop /oh)/sy;
 
         image sized = resize_image(cropped, w, h);
         if(flip) flip_image(sized);
+        if(rot) rotate_image_cw(sized,rot);
+        
         random_distort_image(sized, hue, saturation, exposure);
         d.X.vals[i] = sized.data;
 
-        fill_truth_detection(random_paths[i], boxes, d.y.vals[i], classes, flip, dx, dy, 1./sx, 1./sy);
-
+        fill_truth_detection(random_paths[i], boxes, d.y.vals[i], classes, flip, rot, dx, dy, 1./sx, 1./sy);
+        printf("%s,\tflip %d rot %d\n",random_paths[i],flip,rot);
         free_image(orig);
         free_image(cropped);
     }

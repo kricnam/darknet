@@ -549,7 +549,7 @@ void show_detector(char *filename)
     image sized = resize_image(cropped, 416, 416);
     
     int r=1;
-    //for(r=0;r<4;r++)
+    for(r=0;r<4;r++)
       {
         image img = copy_image(sized);
         box_label *boxes = read_boxes(labelpath, &num_labels);

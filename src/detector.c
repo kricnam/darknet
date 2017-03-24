@@ -561,7 +561,8 @@ void show_detector(char *filename)
             b.w = boxes[0].w;
             b.h = boxes[0].h;
           }
-        printf("[%d]%0.3f,%0.3f,%0.3f,%0.3f --%0.3f %0.3f %0.3f %0.3f\n",num_labels,b.x,b.y,b.w,b.h,
+        printf("[%d]%0.3f,%0.3f,%0.3f,%0.3f --%0.3f %0.3f %0.3f %0.3f\n",
+               num_labels,b.x,b.y,b.w,b.h,
                boxes[0].left,
                boxes[0].right,
                boxes[0].top,

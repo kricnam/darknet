@@ -196,7 +196,8 @@ void correct_boxes_rot(box_label *boxes, int n, float dx, float dy, float sx, fl
     int cw;
     for (cw=0; cw < rot_cw; cw++)
       {
-        printf("%0.3f,%0.3f  %0.3f,%0.3f ->",boxes[i].left,boxes[i].top,boxes[i].right,boxes[i].bottom);
+        printf("[i=%d]%0.3f,%0.3f  %0.3f,%0.3f ->",i,
+               boxes[i].left,boxes[i].top,boxes[i].right,boxes[i].bottom);
         float swap = boxes[i].top;
         float tmp = boxes[i].left;
         boxes[i].top = 1. -  boxes[i].right;

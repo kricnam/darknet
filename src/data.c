@@ -170,7 +170,8 @@ void randomize_boxes(box_label *b, int n)
 
 void correct_boxes_rot(box_label *boxes, int n, float dx, float dy, float sx, float sy,int flip,int rot_cw)
 {
-  int i;
+  int i=0;
+  printf("%0.3f,%0.3f  %0.3f,%0.3f ->",boxes[i].left,boxes[i].top,boxes[i].right,boxes[i].bottom);
   for(i = 0; i < n; ++i){
     if(boxes[i].x == 0 && boxes[i].y == 0) {
       boxes[i].x = 999999;

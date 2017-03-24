@@ -547,7 +547,7 @@ void show_detector(char *filename)
     float dy = ((float)ptop /oh)/sy;
 
     image sized = resize_image(cropped, 416, 416);
-
+    
     int r=1;
     //for(r=0;r<4;r++)
       {
@@ -561,7 +561,7 @@ void show_detector(char *filename)
             b.w = boxes[0].w;
             b.h = boxes[0].h;
           }
-        printf("%0.3f,%0.3f,%0.3f,%0.3f --%0.3f %0.3f %0.3f %0.3f\n",b.x,b.y,b.w,b.h,
+        printf("[%d]%0.3f,%0.3f,%0.3f,%0.3f --%0.3f %0.3f %0.3f %0.3f\n",num_labels,b.x,b.y,b.w,b.h,
                boxes[0].left,
                boxes[0].right,
                boxes[0].top,

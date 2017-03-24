@@ -201,8 +201,8 @@ void correct_boxes_rot(box_label *boxes, int n, float dx, float dy, float sx, fl
                boxes[i].left,boxes[i].top,boxes[i].right,boxes[i].bottom);
         float swap = boxes[i].top;
         float tmp = boxes[i].left;
-        boxes[i].top = 1. -  boxes[i].right;
-        boxes[i].left  = 0.0 - swap;
+        boxes[i].top = 1.0 -  boxes[i].right;
+        boxes[i].left  =  swap;
         swap = boxes[i].right;
         boxes[i].right =  boxes[i].bottom;
         boxes[i].bottom = 1.0 - tmp;

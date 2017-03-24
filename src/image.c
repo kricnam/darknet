@@ -22,7 +22,7 @@ float colors[6][3] = { {1,0,1}, {0,0,1},{0,1,1},{0,1,0},{1,1,0},{1,0,0} };
 
 float get_color(int c, int x, int max)
 {
-    float ratio = ((float)x/max)*5;
+  float ratio = ((float)x/max)*5;
     int i = floor(ratio);
     int j = ceil(ratio);
     ratio -= i;
@@ -181,9 +181,11 @@ void draw_detections(image im, int num, float thresh, box *boxes, float **probs,
 {
     int i;
 
+    printf("num = %d, thresh = %f, classes = %d\n",num,thresh,classes);
     for(i = 0; i < num; ++i){
         int class = max_index(probs[i], classes);
         float prob = probs[i][class];
+        
         if(prob > thresh){
 
             int width = im.h * .012;
@@ -224,6 +226,9 @@ void draw_detections(image im, int num, float thresh, box *boxes, float **probs,
                 draw_label(im, top + width, left, label, rgb);
             }
         }
+        else if (prob > 0.0)
+          printf("clasee[%d] = %0.4f\n",class,prob);
+        
     }
 }
 

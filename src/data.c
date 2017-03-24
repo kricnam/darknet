@@ -6,24 +6,25 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <libgen.h>
 
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 list *get_paths(char *filename)
 {
   char *path;
-    FILE *file = fopen(filename, "r");
-    if(!file) file_error(filename);
+  FILE *file = fopen(filename, "r");
+  if(!file) file_error(filename);
     list *lines = make_list();
     while((path=fgetl(file))){
-        list_insert(lines, path);
+      list_insert(lines, path);
     }
     fclose(file);
     return lines;
 }
 
 /*
-char **get_random_paths_indexes(char **paths, int n, int m, int *indexes)
+  char **get_random_paths_indexes(char **paths, int n, int m, int *indexes)
 {
     char **random_paths = calloc(n, sizeof(char*));
     int i;
@@ -194,7 +195,7 @@ void correct_boxes_rot(box_label *boxes, int n, float dx, float dy, float sx, fl
     int cw;
     for (cw=0; cw < rot_cw; cw++)
       {
-        //printf("%0.3f,%0.3f  %0.3f,%0.3f ->",boxes[i].left,boxes[i].top,boxes[i].right,boxes[i].bottom);
+        printf("%0.3f,%0.3f  %0.3f,%0.3f ->",boxes[i].left,boxes[i].top,boxes[i].right,boxes[i].bottom);
         float swap = boxes[i].top;
         float tmp = boxes[i].left;
         boxes[i].top = 1. -  boxes[i].right;
@@ -202,7 +203,7 @@ void correct_boxes_rot(box_label *boxes, int n, float dx, float dy, float sx, fl
         swap = boxes[i].right;
         boxes[i].right =  boxes[i].bottom;
         boxes[i].bottom = 1.0 - tmp;
-        //printf("%0.3f,%0.3f  %0.3f,%0.3f\n",boxes[i].left,boxes[i].top,boxes[i].right,boxes[i].bottom);
+        printf("%0.3f,%0.3f  %0.3f,%0.3f\n",boxes[i].left,boxes[i].top,boxes[i].right,boxes[i].bottom);
       }
 
     boxes[i].left =  constrain(0, 1, boxes[i].left);
@@ -696,7 +697,7 @@ data load_data_swag(char **paths, int n, int classes, float jitter)
 
     int flip = rand()%2;
     image cropped = crop_image(orig, pleft, ptop, swidth, sheight);
-
+    
     float dx = ((float)pleft/w)/sx;
     float dy = ((float)ptop /h)/sy;
 
@@ -756,10 +757,10 @@ data load_data_detection(int n, char **paths, int m, int w, int h, int boxes, in
         if(rot) rotate_image_cw(sized,rot);
         
         random_distort_image(sized, hue, saturation, exposure);
+        
         d.X.vals[i] = sized.data;
-
         fill_truth_detection(random_paths[i], boxes, d.y.vals[i], classes, flip, rot, dx, dy, 1./sx, 1./sy);
-        //printf("%s,\tflip %d rot %d\n",random_paths[i],flip,rot);
+        //printf("%s,\tflip %d rot %d\n",basename(random_paths[i]),flip,rot);
         free_image(orig);
         free_image(cropped);
     }

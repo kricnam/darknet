@@ -78,7 +78,7 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
     int count = 0;
     //while(i*imgs < N*120){
     while(get_current_batch(net) < net.max_batches){
-        if(l.random && count++%10 == 0){
+      if(l.random && count++%10 == 0){
             printf("Resizing\n");
             int dim = (rand() % 10 + 10) * 32;
             if (get_current_batch(net)+200 > net.max_batches) dim = 608;
@@ -102,7 +102,7 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
         train = buffer;
         load_thread = load_data(args);
 
-        /*
+/*        
            int k;
            for(k = 0; k < l.max_boxes; ++k){
            box b = float_to_box(train.y.vals[10] + 1 + k*5);
@@ -110,14 +110,14 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
            printf("loaded: %f %f %f %f\n", b.x, b.y, b.w, b.h);
            }
            image im = float_to_image(448, 448, 3, train.X.vals[10]);
-           int k;
+           
            for(k = 0; k < l.max_boxes; ++k){
            box b = float_to_box(train.y.vals[10] + 1 + k*5);
            printf("%d %d %d %d\n", truth.x, truth.y, truth.w, truth.h);
            draw_bbox(im, b, 8, 1,0,0);
            }
            save_image(im, "truth11");
-         */
+  */       
 
         printf("Loaded: %lf seconds\n", sec(clock()-time));
 
@@ -370,7 +370,7 @@ void validate_detector_recall(char *cfgfile, char *weightfile)
     fprintf(stderr, "Learning Rate: %g, Momentum: %g, Decay: %g\n", net.learning_rate, net.momentum, net.decay);
     srand(time(0));
 
-    list *plist = get_paths("data/voc.2007.test");
+    list *plist = get_paths("./train.txt");//"data/voc.2007.test");
     char **paths = (char **)list_to_array(plist);
 
     layer l = net.layers[net.n-1];
@@ -497,6 +497,127 @@ void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filenam
     }
 }
 
+void show_detector(char *filename)
+{
+  char buff[256];
+  char *input = buff;
+  int j;
+  float nms=.4;
+  while(1){
+    if(filename){
+      strncpy(input, filename, 256);
+    } else {
+      printf("Enter Image Path: ");
+      fflush(stdout);
+      input = fgets(input, 256, stdin);
+      if(!input) return;
+      strtok(input, "\n");
+    }
+    image orig = load_image_color(input,0,0);
+    char* path = input;
+    char labelpath[4096];
+    find_replace(path, "images", "labels", labelpath);
+    find_replace(labelpath, "JPEGImages", "labels", labelpath);
+    find_replace(labelpath, ".jpg", ".txt", labelpath);
+    find_replace(labelpath, ".JPEG", ".txt", labelpath);
+
+    int num_labels = 0;
+    int oh = orig.h;
+    int ow = orig.w;
+
+    int dw = (ow*0.0);
+    int dh = (oh*0.0);
+
+    int pleft  = rand_uniform(-dw, dw);
+    int pright = rand_uniform(-dw, dw);
+    int ptop   = rand_uniform(-dh, dh);
+    int pbot   = rand_uniform(-dh, dh);
+
+    int swidth =  ow - pleft - pright;
+    int sheight = oh - ptop - pbot;
+
+    float sx = (float)swidth  / ow;
+    float sy = (float)sheight / oh;
+
+    
+    image cropped = crop_image(orig, pleft, ptop, swidth, sheight);
+    
+
+    float dx = ((float)pleft/ow)/sx;
+    float dy = ((float)ptop /oh)/sy;
+
+    image sized = resize_image(cropped, 416, 416);
+
+    int r=1;
+    //for(r=0;r<4;r++)
+      {
+        image img = copy_image(sized);
+        box_label *boxes = read_boxes(labelpath, &num_labels);
+        box b;
+        if (boxes)
+          {
+            b.x = boxes[0].x;
+            b.y = boxes[0].y;
+            b.w = boxes[0].w;
+            b.h = boxes[0].h;
+          }
+        printf("%0.3f,%0.3f,%0.3f,%0.3f --%0.3f\n",b.x,b.y,b.w,b.h,boxes[0].left);
+        rotate_image_cw(img,r);
+        printf("dx,dy,sx,sy %0.3f,%0.3f,%0.3f,%0.3f\n",dx,dy,sx,sy);
+        correct_boxes_rot(boxes,1,dx,dy,sx,sy,0,r);
+        
+        
+        if (boxes)
+          {
+            b.x = boxes[0].x;
+            b.y = boxes[0].y;
+            b.w = boxes[0].w;
+            b.h = boxes[0].h;
+          }
+        printf("%0.3f,%0.3f,%0.3f,%0.3f\n",b.x,b.y,b.w,b.h);
+        draw_bbox(img,b,5,1.0,0.1,0.1);
+        char buf[32];
+        sprintf(buf,"tmp%d",r);
+        show_image(img, buf);
+        free_image(img);
+      }
+    
+
+    
+
+    //image sized = resize_image(im, net.w, net.h);
+
+
+    //layer l = net.layers[net.n-1];
+
+    //box *boxes = calloc(l.w*l.h*l.n, sizeof(box));
+    
+    
+
+    //float *X = sized.data;
+    //time=clock();
+    //network_predict(net, X);
+    //printf("%s: Predicted in %f seconds.\n", input, sec(clock()-time));
+    //get_region_boxes(l, 1, 1, thresh, probs, boxes, 0, 0, hier_thresh);
+    //if (l.softmax_tree && nms) do_nms_obj(boxes, probs, l.w*l.h*l.n, l.classes, nms);
+    //else if (nms) do_nms_sort(boxes, probs, l.w*l.h*l.n, l.classes, nms);
+    //draw_detections(im, l.w*l.h*l.n, thresh, boxes, probs, names, alphabet, l.classes);
+    //save_image(im, "predictions");
+    
+
+    //free_image(im);
+    //free_image(sized);
+    //free(boxes);
+    //free_ptrs((void **)probs, l.w*l.h*l.n);
+#ifdef OPENCV
+    cvWaitKey(0);
+    cvDestroyAllWindows();
+#endif
+    if (filename) break;
+  }
+}
+
+
 void run_detector(int argc, char **argv)
 {
     char *prefix = find_char_arg(argc, argv, "-prefix", 0);
@@ -549,4 +670,8 @@ void run_detector(int argc, char **argv)
         char **names = get_labels(name_list);
         demo(cfg, weights, thresh, cam_index, filename, names, classes, frame_skip, prefix, hier_thresh);
     }
+    else if (0==strcmp(argv[2], "dbgshow"))
+      {
+        show_detector(datacfg);
+      }
 }

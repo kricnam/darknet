@@ -496,6 +496,7 @@ void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filenam
         if (filename) break;
     }
 }
+extern void correct_boxes_rot(box_label *boxes, int n, float dx, float dy, float sx, float sy,int flip,int rot_cw);
 
 void show_detector(char *filename)
 {
@@ -545,7 +546,7 @@ void show_detector(char *filename)
 
     float dx = ((float)pleft/ow)/sx;
     float dy = ((float)ptop /oh)/sy;
-
+    
     image sized = resize_image(cropped, 416, 416);
     
     int r=1;

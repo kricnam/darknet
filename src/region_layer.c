@@ -318,7 +318,7 @@ void get_region_boxes(layer l, int w, int h, float thresh, float **probs, box *b
             boxes[index].y *= h;
             boxes[index].w *= w;
             boxes[index].h *= h;
-
+            
             int class_index = index * (l.classes + 5) + 5;
             if(l.softmax_tree){
 

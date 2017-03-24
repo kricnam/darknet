@@ -561,7 +561,12 @@ void show_detector(char *filename)
             b.w = boxes[0].w;
             b.h = boxes[0].h;
           }
-        printf("%0.3f,%0.3f,%0.3f,%0.3f --%0.3f\n",b.x,b.y,b.w,b.h,boxes[0].left);
+        printf("%0.3f,%0.3f,%0.3f,%0.3f --%0.3f %0.3f %0.3f %0.3f\n",b.x,b.y,b.w,b.h,
+               boxes[0].left,
+               boxes[0].right,
+               boxes[0].top,
+               boxes[0].bottom);
+        
         rotate_image_cw(img,r);
         printf("dx,dy,sx,sy %0.3f,%0.3f,%0.3f,%0.3f\n",dx,dy,sx,sy);
         correct_boxes_rot(boxes,1,dx,dy,sx,sy,0,r);
